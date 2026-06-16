@@ -10,10 +10,13 @@ const api = axios.create({
  * 获取全部游戏
  * @param status - 可选的试玩状态筛选
  */
-export async function fetchGames(status?: string): Promise<Game[]> {
+export async function fetchGames(status?: string, name?: string): Promise<Game[]> {
   const params: Record<string, string> = {};
   if (status) {
     params.status = status;
+  }
+  if (name) {
+    params.name = name;
   }
   const { data } = await api.get<Game[]>('/games', { params });
   return data;

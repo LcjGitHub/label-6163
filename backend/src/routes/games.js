@@ -84,13 +84,24 @@ router.get('/statuses', (_req, res) => {
 
 router.get('/', (req, res) => {
   const status = typeof req.query.status === 'string' ? req.query.status.trim() : '';
+  const name = typeof req.query.name === 'string' ? req.query.name.trim() : '';
 
   let sql = 'SELECT * FROM games';
   const params = [];
+  const conditions = [];
 
   if (status && PLAY_STATUSES.includes(status)) {
-    sql += ' WHERE play_status = ?';
+    conditions.push('play_status = ?');
     params.push(status);
+  }
+
+  if (name) {
+    conditions.push('name LIKE ?');
+    params.push(`%${name}%`);
+  }
+
+  if (conditions.length > 0) {
+    sql += ' WHERE ' + conditions.join(' AND ');
   }
 
   sql += ' ORDER BY updated_at DESC, id DESC';

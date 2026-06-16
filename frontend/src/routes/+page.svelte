@@ -1,12 +1,14 @@
 <script lang="ts">
   import { createQuery } from '@tanstack/svelte-query';
-  import { Button, Card, Select, Spinner, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
-  import { DownloadOutline, FilterOutline, PlusOutline } from 'flowbite-svelte-icons';
+  import { Button, Card, Input, Select, Spinner, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
+  import { DownloadOutline, FilterOutline, PlusOutline, SearchOutline, XOutline } from 'flowbite-svelte-icons';
   import StatusBadge from '$lib/components/StatusBadge.svelte';
   import { exportGames, fetchGames, fetchPlayStatuses } from '$lib/api';
   import type { PlayStatus } from '$lib/types';
 
   let selectedStatus = $state('全部');
+  let searchInput = $state('');
+  let searchKeyword = $state('');
 
   const statusesQuery = createQuery({
     queryKey: ['playStatuses'],
@@ -16,8 +18,11 @@
   const statusOptions = $derived(['全部', ...($statusesQuery.data ?? [])]);
 
   const gamesQuery = createQuery({
-    queryKey: ['games', selectedStatus],
-    queryFn: () => fetchGames(selectedStatus === '全部' ? undefined : selectedStatus)
+    queryKey: ['games', selectedStatus, searchKeyword],
+    queryFn: () => fetchGames(
+      selectedStatus === '全部' ? undefined : selectedStatus,
+      searchKeyword || undefined
+    )
   });
 
   let exporting = false;
@@ -33,6 +38,21 @@
       exportError = '导出失败，请确认后端已在 http://localhost:5000 启动。';
     } finally {
       exporting = false;
+    }
+  }
+
+  function handleSearch() {
+    searchKeyword = searchInput.trim();
+  }
+
+  function handleClearSearch() {
+    searchInput = '';
+    searchKeyword = '';
+  }
+
+  function handleKeydown(event: KeyboardEvent) {
+    if (event.key === 'Enter') {
+      handleSearch();
     }
   }
 </script>
@@ -58,7 +78,7 @@
       </Button>
     </div>
   </div>
-  <div class="flex items-center gap-3">
+  <div class="flex items-center gap-3 flex-wrap">
     <div class="flex items-center gap-2">
       <FilterOutline class="h-4 w-4 text-gray-500" />
       <span class="text-sm text-gray-600">试玩状态：</span>
@@ -69,6 +89,24 @@
           <option value={status}>{status}</option>
         {/each}
       </Select>
+    </div>
+    <div class="h-6 w-px bg-gray-300"></div>
+    <div class="flex items-center gap-2">
+      <div class="w-56">
+        <Input
+          bind:value={searchInput}
+          placeholder="搜索游戏名..."
+          on:keydown={handleKeydown}
+        />
+      </div>
+      <Button size="sm" color="blue" on:click={handleSearch}>
+        <SearchOutline class="h-4 w-4" />
+      </Button>
+      {#if searchKeyword}
+        <Button size="sm" color="light" on:click={handleClearSearch}>
+          <XOutline class="h-4 w-4" />
+        </Button>
+      {/if}
     </div>
     {#if $gamesQuery.isSuccess}
       <span class="text-sm text-gray-500">
@@ -94,7 +132,14 @@
   </Card>
 {:else if $gamesQuery.data.length === 0}
   <Card>
-    <p class="text-gray-600">暂无数据</p>
+    {#if searchKeyword}
+      <div class="text-center py-4">
+        <p class="text-gray-600 mb-2">未找到与「{searchKeyword}」相关的游戏</p>
+        <Button size="sm" color="light" on:click={handleClearSearch}>清空搜索</Button>
+      </div>
+    {:else}
+      <p class="text-gray-600">暂无数据</p>
+    {/if}
   </Card>
 {:else}
   <Card class="overflow-x-auto p-0">
