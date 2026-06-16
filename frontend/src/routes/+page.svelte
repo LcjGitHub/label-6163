@@ -1,14 +1,31 @@
 <script lang="ts">
-  import { createQuery } from '@tanstack/svelte-query';
-  import { Button, Card, Spinner, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
-  import { DownloadOutline, PlusOutline } from 'flowbite-svelte-icons';
+  import { createQuery, useQueryClient } from '@tanstack/svelte-query';
+  import { Button, Card, Select, Spinner, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
+  import { DownloadOutline, FilterOutline, PlusOutline } from 'flowbite-svelte-icons';
   import StatusBadge from '$lib/components/StatusBadge.svelte';
-  import { exportGames, fetchGames } from '$lib/api';
+  import { exportGames, fetchGames, fetchPlayStatuses } from '$lib/api';
   import type { PlayStatus } from '$lib/types';
 
+  const queryClient = useQueryClient();
+
+  let selectedStatus = $state('全部');
+
+  const statusOptions = ['全部', '未开始', '试玩中', '已完成', '搁置'];
+
+  const statusesQuery = createQuery({
+    queryKey: ['playStatuses'],
+    queryFn: fetchPlayStatuses
+  });
+
   const gamesQuery = createQuery({
-    queryKey: ['games'],
-    queryFn: fetchGames
+    queryKey: ['games', selectedStatus],
+    queryFn: () => fetchGames(selectedStatus === '全部' ? undefined : selectedStatus)
+  });
+
+  $effect(() => {
+    if (selectedStatus !== undefined) {
+      queryClient.invalidateQueries({ queryKey: ['games'] });
+    }
   });
 
   let exporting = false;
@@ -32,20 +49,40 @@
   <title>游戏列表 · 试玩清单</title>
 </svelte:head>
 
-<div class="mb-6 flex items-center justify-between">
-  <div>
-    <h1 class="text-2xl font-bold text-gray-900">试玩游戏列表</h1>
-    <p class="mt-1 text-sm text-gray-500">记录独立 Demo 的试玩状态与简短评价</p>
+<div class="mb-6">
+  <div class="flex items-center justify-between mb-4">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">试玩游戏列表</h1>
+      <p class="mt-1 text-sm text-gray-500">记录独立 Demo 的试玩状态与简短评价</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <Button color="light" on:click={handleExport} disabled={exporting || $gamesQuery.isPending}>
+        <DownloadOutline class="me-2 h-4 w-4" />
+        {exporting ? '导出中...' : '导出清单'}
+      </Button>
+      <Button href="/games/new" color="blue">
+        <PlusOutline class="me-2 h-4 w-4" />
+        新增游戏
+      </Button>
+    </div>
   </div>
   <div class="flex items-center gap-3">
-    <Button color="light" on:click={handleExport} disabled={exporting || $gamesQuery.isPending}>
-      <DownloadOutline class="me-2 h-4 w-4" />
-      {exporting ? '导出中...' : '导出清单'}
-    </Button>
-    <Button href="/games/new" color="blue">
-      <PlusOutline class="me-2 h-4 w-4" />
-      新增游戏
-    </Button>
+    <div class="flex items-center gap-2">
+      <FilterOutline class="h-4 w-4 text-gray-500" />
+      <span class="text-sm text-gray-600">试玩状态：</span>
+    </div>
+    <div class="w-40">
+      <Select bind:value={selectedStatus}>
+        {#each statusOptions as status}
+          <option value={status}>{status}</option>
+        {/each}
+      </Select>
+    </div>
+    {#if $gamesQuery.isSuccess}
+      <span class="text-sm text-gray-500">
+        共 {$gamesQuery.data.length} 条记录
+      </span>
+    {/if}
   </div>
 </div>
 
@@ -65,7 +102,11 @@
   </Card>
 {:else if $gamesQuery.data.length === 0}
   <Card>
-    <p class="text-gray-600">暂无游戏，点击「新增游戏」开始记录。</p>
+    {#if selectedStatus !== '全部'}
+      <p class="text-gray-600">暂无匹配「{selectedStatus}」状态的游戏记录。</p>
+    {:else}
+      <p class="text-gray-600">暂无游戏，点击「新增游戏」开始记录。</p>
+    {/if}
   </Card>
 {:else}
   <Card class="overflow-x-auto p-0">

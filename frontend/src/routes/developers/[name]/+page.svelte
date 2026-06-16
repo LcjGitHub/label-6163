@@ -1,17 +1,30 @@
 <script lang="ts">
-  import { createQuery } from '@tanstack/svelte-query';
-  import { Card, Spinner, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
-  import { ArrowLeftOutline } from 'flowbite-svelte-icons';
+  import { createQuery, useQueryClient } from '@tanstack/svelte-query';
+  import { Card, Select, Spinner, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
+  import { ArrowLeftOutline, FilterOutline } from 'flowbite-svelte-icons';
   import StatusBadge from '$lib/components/StatusBadge.svelte';
   import { fetchGamesByAuthor } from '$lib/api';
   import type { PageData } from './$types';
   import type { PlayStatus } from '$lib/types';
 
+  const queryClient = useQueryClient();
+
   let { data }: { data: PageData } = $props();
 
+  let selectedStatus = $state('全部');
+  const authorName = $derived(data.authorName);
+
+  const statusOptions = ['全部', '未开始', '试玩中', '已完成', '搁置'];
+
   const gamesQuery = createQuery({
-    queryKey: ['authorGames', data.authorName],
-    queryFn: () => fetchGamesByAuthor(data.authorName)
+    queryKey: ['authorGames', authorName, selectedStatus],
+    queryFn: () => fetchGamesByAuthor(authorName, selectedStatus === '全部' ? undefined : selectedStatus)
+  });
+
+  $effect(() => {
+    if (selectedStatus !== undefined) {
+      queryClient.invalidateQueries({ queryKey: ['authorGames'] });
+    }
   });
 </script>
 
@@ -26,6 +39,24 @@
   </a>
   <h1 class="text-2xl font-bold text-gray-900">{data.authorName} 的游戏</h1>
   <p class="mt-1 text-sm text-gray-500">该作者开发的所有游戏及其试玩状态</p>
+  <div class="flex items-center gap-3 mt-4">
+    <div class="flex items-center gap-2">
+      <FilterOutline class="h-4 w-4 text-gray-500" />
+      <span class="text-sm text-gray-600">试玩状态：</span>
+    </div>
+    <div class="w-40">
+      <Select bind:value={selectedStatus}>
+        {#each statusOptions as status}
+          <option value={status}>{status}</option>
+        {/each}
+      </Select>
+    </div>
+    {#if $gamesQuery.isSuccess}
+      <span class="text-sm text-gray-500">
+        共 {$gamesQuery.data.length} 条记录
+      </span>
+    {/if}
+  </div>
 </div>
 
 {#if $gamesQuery.isPending}
@@ -46,7 +77,11 @@
   {/if}
 {:else if $gamesQuery.data.length === 0}
   <Card>
-    <p class="text-gray-600">该作者暂无游戏记录。</p>
+    {#if selectedStatus !== '全部'}
+      <p class="text-gray-600">该作者暂无匹配「{selectedStatus}」状态的游戏记录。</p>
+    {:else}
+      <p class="text-gray-600">该作者暂无游戏记录。</p>
+    {/if}
   </Card>
 {:else}
   <Card class="p-0">

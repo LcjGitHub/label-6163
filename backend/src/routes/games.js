@@ -82,10 +82,20 @@ router.get('/statuses', (_req, res) => {
   res.json(PLAY_STATUSES);
 });
 
-router.get('/', (_req, res) => {
-  const games = db
-    .prepare('SELECT * FROM games ORDER BY updated_at DESC, id DESC')
-    .all();
+router.get('/', (req, res) => {
+  const status = typeof req.query.status === 'string' ? req.query.status.trim() : '';
+
+  let sql = 'SELECT * FROM games';
+  const params = [];
+
+  if (status && PLAY_STATUSES.includes(status)) {
+    sql += ' WHERE play_status = ?';
+    params.push(status);
+  }
+
+  sql += ' ORDER BY updated_at DESC, id DESC';
+
+  const games = db.prepare(sql).all(...params);
   const gamesWithTags = attachTagsToGames(games);
   res.json(gamesWithTags);
 });

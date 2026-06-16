@@ -8,9 +8,14 @@ const api = axios.create({
 
 /**
  * 获取全部游戏
+ * @param status - 可选的试玩状态筛选
  */
-export async function fetchGames(): Promise<Game[]> {
-  const { data } = await api.get<Game[]>('/games');
+export async function fetchGames(status?: string): Promise<Game[]> {
+  const params: Record<string, string> = {};
+  if (status) {
+    params.status = status;
+  }
+  const { data } = await api.get<Game[]>('/games', { params });
   return data;
 }
 
@@ -82,9 +87,14 @@ export async function fetchAuthors(): Promise<Author[]> {
 /**
  * 按作者名获取其全部游戏
  * @param authorName - 作者名称
+ * @param status - 可选的试玩状态筛选
  */
-export async function fetchGamesByAuthor(authorName: string): Promise<Game[]> {
-  const { data } = await api.get<Game[]>(`/authors/${encodeURIComponent(authorName)}/games`);
+export async function fetchGamesByAuthor(authorName: string, status?: string): Promise<Game[]> {
+  const params: Record<string, string> = {};
+  if (status) {
+    params.status = status;
+  }
+  const { data } = await api.get<Game[]>(`/authors/${encodeURIComponent(authorName)}/games`, { params });
   return data;
 }
 

@@ -51,16 +51,23 @@ router.get('/', (_req, res) => {
   res.json(authorsWithGames);
 });
 
+const PLAY_STATUSES = ['未开始', '试玩中', '已完成', '搁置'];
+
 router.get('/:name/games', (req, res) => {
   const authorName = decodeURIComponent(req.params.name);
+  const status = typeof req.query.status === 'string' ? req.query.status.trim() : '';
 
-  const games = db
-    .prepare(
-      `SELECT * FROM games
-       WHERE author = ?
-       ORDER BY updated_at DESC, id DESC`
-    )
-    .all(authorName);
+  let sql = 'SELECT * FROM games WHERE author = ?';
+  const params = [authorName];
+
+  if (status && PLAY_STATUSES.includes(status)) {
+    sql += ' AND play_status = ?';
+    params.push(status);
+  }
+
+  sql += ' ORDER BY updated_at DESC, id DESC';
+
+  const games = db.prepare(sql).all(...params);
 
   if (games.length === 0) {
     const existingAuthor = db
