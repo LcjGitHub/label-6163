@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Game, GameInput, Stats, Tag } from './types';
+import type { Author, Game, GameInput, Stats, Tag } from './types';
 
 const api = axios.create({
   baseURL: 'http://localhost:5000/api',
@@ -68,5 +68,22 @@ export async function fetchStats(): Promise<Stats> {
 
 export async function fetchTags(): Promise<Tag[]> {
   const { data } = await api.get<Tag[]>('/tags');
+  return data;
+}
+
+/**
+ * 获取作者列表（按作者分组）
+ */
+export async function fetchAuthors(): Promise<Author[]> {
+  const { data } = await api.get<Author[]>('/authors');
+  return data;
+}
+
+/**
+ * 按作者名获取其全部游戏
+ * @param authorName - 作者名称
+ */
+export async function fetchGamesByAuthor(authorName: string): Promise<Game[]> {
+  const { data } = await api.get<Game[]>(`/authors/${encodeURIComponent(authorName)}/games`);
   return data;
 }

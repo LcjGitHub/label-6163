@@ -40,3 +40,10 @@ export interface Stats {
   status_counts: StatusCounts;
   recent_games: Game[];
 }
+
+/** 作者信息 */
+export interface Author {
+  name: string;
+  game_count: number;
+  games: Game[];
+}

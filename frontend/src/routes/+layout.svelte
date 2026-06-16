@@ -16,7 +16,8 @@
 
   const navItems = [
     { href: '/', label: '游戏列表' },
-    { href: '/stats', label: '数据统计' }
+    { href: '/stats', label: '数据统计' },
+    { href: '/developers', label: '开发者视图' }
   ];
 </script>
 
