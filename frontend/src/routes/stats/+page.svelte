@@ -1,11 +1,10 @@
 <script lang="ts">
   import { createQuery } from '@tanstack/svelte-query';
-  import { Card, Spinner } from 'flowbite-svelte';
+  import { Button, Card, Spinner } from 'flowbite-svelte';
   import StatsCard from '$lib/components/StatsCard.svelte';
   import StatusBadge from '$lib/components/StatusBadge.svelte';
   import { fetchStats } from '$lib/api';
   import type { PlayStatus } from '$lib/types';
-  import { getStatusColor } from '$lib/status';
 
   const statsQuery = createQuery({
     queryKey: ['stats'],
@@ -46,13 +45,9 @@
   {@const stats = $statsQuery.data}
 
   <div class="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-    <StatsCard label="游戏总数" value={stats.total} color="purple" />
+    <StatsCard label="游戏总数" value={stats.total} />
     {#each statusOrder as status}
-      <StatsCard
-        label={status}
-        value={stats.status_counts[status]}
-        color={getStatusColor(status) as 'blue' | 'green' | 'yellow' | 'gray'}
-      />
+      <StatsCard label={status} value={stats.status_counts[status]} />
     {/each}
   </div>
 
@@ -65,10 +60,13 @@
         {#each stats.recent_games as game (game.id)}
           <div class="flex items-center justify-between py-3 first:pt-0 last:pb-0">
             <div class="flex items-center gap-3">
-              <span class="font-medium text-gray-900">{game.name}</span>
+              <a href="/games/{game.id}" class="font-medium text-gray-900 hover:text-blue-600 hover:underline">{game.name}</a>
               <StatusBadge status={game.play_status as PlayStatus} />
             </div>
-            <span class="text-sm text-gray-500">{formatDate(game.updated_at)}</span>
+            <div class="flex items-center gap-3">
+              <span class="text-sm text-gray-500">{formatDate(game.updated_at)}</span>
+              <Button href="/games/{game.id}" size="xs" color="light">编辑笔记</Button>
+            </div>
           </div>
         {/each}
       </div>
