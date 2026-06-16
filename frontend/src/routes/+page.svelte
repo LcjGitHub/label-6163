@@ -12,12 +12,16 @@
   });
 
   let exporting = false;
+  let exportError = '';
 
   async function handleExport() {
     if (exporting) return;
     exporting = true;
+    exportError = '';
     try {
       await exportGames();
+    } catch {
+      exportError = '导出失败，请确认后端已在 http://localhost:5000 启动。';
     } finally {
       exporting = false;
     }
@@ -44,6 +48,12 @@
     </Button>
   </div>
 </div>
+
+{#if exportError}
+  <Card class="mb-4 border-red-200 bg-red-50">
+    <p class="text-red-700">{exportError}</p>
+  </Card>
+{/if}
 
 {#if $gamesQuery.isPending}
   <div class="flex justify-center py-16">

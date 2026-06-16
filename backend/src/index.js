@@ -10,7 +10,7 @@ import { seedIfEmpty } from './seed.js';
 const app = express();
 const PORT = 5000;
 
-app.use(cors({ origin: ['http://localhost:5101', 'http://127.0.0.1:5101'] }));
+app.use(cors({ origin: ['http://localhost:5101', 'http://127.0.0.1:5101'], exposedHeaders: ['Content-Disposition'] }));
 app.use(express.json());
 
 app.get('/api/health', (_req, res) => {
