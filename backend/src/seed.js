@@ -116,7 +116,45 @@ function seedGamesWithTags() {
   return SEED_GAMES.length;
 }
 
+function backfillGameTags() {
+  const { gameCount } = db.prepare('SELECT COUNT(*) AS gameCount FROM games').get();
+  if (gameCount === 0) return 0;
+
+  const { tagCount } = db.prepare('SELECT COUNT(*) AS tagCount FROM game_tags').get();
+  if (tagCount > 0) return 0;
+
+  ensureTags();
+
+  const insertGameTag = db.prepare(`
+    INSERT OR IGNORE INTO game_tags (game_id, tag_id)
+    VALUES (?, (SELECT id FROM tags WHERE name = ?))
+  `);
+
+  let backfilled = 0;
+  db.exec('BEGIN');
+  try {
+    for (const seedGame of SEED_GAMES) {
+      const game = db.prepare('SELECT id FROM games WHERE name = ?').get(seedGame.name);
+      if (!game) continue;
+      for (const tagName of seedGame.tags) {
+        insertGameTag.run(game.id, tagName);
+        backfilled++;
+      }
+    }
+    db.exec('COMMIT');
+  } catch (error) {
+    db.exec('ROLLBACK');
+    throw error;
+  }
+
+  return backfilled;
+}
+
 export function seedIfEmpty() {
   ensureTags();
-  return seedGamesWithTags();
+  const inserted = seedGamesWithTags();
+  if (inserted === 0) {
+    backfillGameTags();
+  }
+  return inserted;
 }

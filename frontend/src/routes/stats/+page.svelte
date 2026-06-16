@@ -60,7 +60,19 @@
         {#each stats.recent_games as game (game.id)}
           <div class="flex items-center justify-between py-3 first:pt-0 last:pb-0">
             <div class="flex items-center gap-3">
-              <a href="/games/{game.id}" class="font-medium text-gray-900 hover:text-blue-600 hover:underline">{game.name}</a>
+              <div class="flex flex-wrap items-center gap-1.5">
+                <a href="/games/{game.id}" class="font-medium text-gray-900 hover:text-blue-600 hover:underline">{game.name}</a>
+                {#if game.tags && game.tags.length > 0}
+                  {#each game.tags as tag (tag.id)}
+                    <span
+                      class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium leading-none"
+                      style="background-color: {tag.color}20; color: {tag.color}; border: 1px solid {tag.color}40;"
+                    >
+                      {tag.name}
+                    </span>
+                  {/each}
+                {/if}
+              </div>
               <StatusBadge status={game.play_status as PlayStatus} />
             </div>
             <div class="flex items-center gap-3">
