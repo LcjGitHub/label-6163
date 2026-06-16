@@ -1,0 +1,23 @@
+/** 试玩状态枚举 */
+export type PlayStatus = '未开始' | '试玩中' | '已完成' | '搁置';
+
+/** 游戏记录 */
+export interface Game {
+  id: number;
+  name: string;
+  author: string;
+  platform_url: string;
+  play_status: PlayStatus;
+  review: string;
+  created_at: string;
+  updated_at: string;
+}
+
+/** 创建/更新游戏请求体 */
+export interface GameInput {
+  name: string;
+  author: string;
+  platform_url: string;
+  play_status: PlayStatus;
+  review: string;
+}
