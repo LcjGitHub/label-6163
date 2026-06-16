@@ -155,6 +155,7 @@
         <TableHeadCell>作者</TableHeadCell>
         <TableHeadCell>试玩状态</TableHeadCell>
         <TableHeadCell class="whitespace-nowrap">试玩时长</TableHeadCell>
+        <TableHeadCell>评分</TableHeadCell>
         <TableHeadCell>简短评价</TableHeadCell>
         <TableHeadCell>
           <span class="sr-only">操作</span>
@@ -187,6 +188,16 @@
                 {game.play_hours}h
               {:else}
                 <span class="text-gray-400">未记录</span>
+              {/if}
+            </TableBodyCell>
+            <TableBodyCell class="whitespace-nowrap">
+              {#if game.rating !== null && game.rating !== undefined}
+                <span class="text-amber-500">
+                  {#each Array(game.rating) as _, i (i)}★{/each}
+                </span>
+                <span class="ml-1 text-xs text-gray-500">{game.rating}星</span>
+              {:else}
+                <span class="text-gray-400">未评</span>
               {/if}
             </TableBodyCell>
             <TableBodyCell class="max-w-xs truncate text-gray-600">{game.review || '—'}</TableBodyCell>

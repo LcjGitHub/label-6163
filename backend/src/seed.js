@@ -1,6 +1,6 @@
 import db from './db.js';
 
-/** @type {Array<{ name: string; author: string; platform_url: string; play_status: string; play_hours?: number; review: string; tags: string[] }>} */
+/** @type {Array<{ name: string; author: string; platform_url: string; play_status: string; play_hours?: number; rating?: number; review: string; tags: string[] }>} */
 const SEED_GAMES = [
   {
     name: 'Hollow Knight',
@@ -8,6 +8,7 @@ const SEED_GAMES = [
     platform_url: 'https://store.steampowered.com/app/367520/Hollow_Knight/',
     play_status: '已完成',
     play_hours: 45.5,
+    rating: 5,
     review: '地图探索与战斗手感出色，独立 Metroidvania 标杆。',
     tags: ['横版', '银河恶魔城', '2D']
   },
@@ -17,6 +18,7 @@ const SEED_GAMES = [
     platform_url: 'https://store.steampowered.com/app/504230/Celeste/',
     play_status: '试玩中',
     play_hours: 12.3,
+    rating: 4,
     review: '平台跳跃难度曲线清晰，叙事与机制结合紧密。',
     tags: ['平台跳跃', '像素', '独立']
   },
@@ -34,6 +36,7 @@ const SEED_GAMES = [
     platform_url: 'https://store.steampowered.com/app/1145360/Hades/',
     play_status: '试玩中',
     play_hours: 28.7,
+    rating: 5,
     review: 'Roguelike 循环设计成熟，对话与美术风格统一。',
     tags: ['Roguelike', '动作', '独立']
   },
@@ -42,6 +45,7 @@ const SEED_GAMES = [
     author: 'Toby Fox',
     platform_url: 'https://store.steampowered.com/app/391540/Undertale/',
     play_status: '搁置',
+    rating: 4,
     review: '经典 RPG，计划完整通关后再写详细笔记。',
     tags: ['RPG', '像素', '独立']
   }
@@ -87,8 +91,8 @@ function seedGamesWithTags() {
   ensureTags();
 
   const insertGame = db.prepare(`
-    INSERT INTO games (name, author, platform_url, play_status, play_hours, review)
-    VALUES (?, ?, ?, ?, ?, ?)
+    INSERT INTO games (name, author, platform_url, play_status, play_hours, rating, review)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
   `);
   const insertGameTag = db.prepare(`
     INSERT OR IGNORE INTO game_tags (game_id, tag_id)
@@ -104,6 +108,7 @@ function seedGamesWithTags() {
         game.platform_url,
         game.play_status,
         game.play_hours ?? null,
+        game.rating ?? null,
         game.review
       );
       const gameId = result.lastInsertRowid;

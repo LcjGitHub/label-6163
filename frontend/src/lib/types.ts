@@ -15,6 +15,7 @@ export interface Game {
   platform_url: string;
   play_status: PlayStatus;
   play_hours: number | null;
+  rating: number | null;
   review: string;
   tags: Tag[];
   created_at: string;
@@ -27,6 +28,7 @@ export interface GameInput {
   platform_url: string;
   play_status: PlayStatus;
   play_hours: number | null;
+  rating: number | null;
   review: string;
   tag_ids: number[];
 }

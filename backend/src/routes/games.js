@@ -49,6 +49,7 @@ function validateGameBody(body) {
   const review = typeof body.review === 'string' ? body.review.trim() : '';
   const tag_ids = Array.isArray(body.tag_ids) ? body.tag_ids : [];
   const play_hours_raw = body.play_hours;
+  const rating_raw = body.rating;
 
   if (!name) {
     return { ok: false, error: '游戏名不能为空' };
@@ -67,13 +68,22 @@ function validateGameBody(body) {
     play_hours = Math.round(num * 10) / 10;
   }
 
+  let rating = null;
+  if (rating_raw !== undefined && rating_raw !== null && rating_raw !== '') {
+    const num = Number(rating_raw);
+    if (isNaN(num) || !Number.isInteger(num) || num < 1 || num > 5) {
+      return { ok: false, error: '评分必须是 1 到 5 之间的整数' };
+    }
+    rating = num;
+  }
+
   const validTagIds = tag_ids
     .map(id => Number(id))
     .filter(id => Number.isInteger(id) && id > 0);
 
   return {
     ok: true,
-    data: { name, author, platform_url, play_status, play_hours, review },
+    data: { name, author, platform_url, play_status, play_hours, rating, review },
     tagIds: validTagIds
   };
 }
@@ -134,16 +144,16 @@ router.post('/', (req, res) => {
     return;
   }
 
-  const { name, author, platform_url, play_status, play_hours, review } = validated.data;
+  const { name, author, platform_url, play_status, play_hours, rating, review } = validated.data;
 
   db.exec('BEGIN');
   try {
     const result = db
       .prepare(`
-        INSERT INTO games (name, author, platform_url, play_status, play_hours, review, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, datetime('now'))
+        INSERT INTO games (name, author, platform_url, play_status, play_hours, rating, review, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
       `)
-      .run(name, author, platform_url, play_status, play_hours, review);
+      .run(name, author, platform_url, play_status, play_hours, rating, review);
 
     const gameId = result.lastInsertRowid;
     setGameTags(gameId, validated.tagIds);
@@ -176,7 +186,7 @@ router.put('/:id', (req, res) => {
     return;
   }
 
-  const { name, author, platform_url, play_status, play_hours, review } = validated.data;
+  const { name, author, platform_url, play_status, play_hours, rating, review } = validated.data;
   const gameId = req.params.id;
 
   db.exec('BEGIN');
@@ -188,10 +198,11 @@ router.put('/:id', (req, res) => {
           platform_url = ?,
           play_status = ?,
           play_hours = ?,
+          rating = ?,
           review = ?,
           updated_at = datetime('now')
       WHERE id = ?
-    `).run(name, author, platform_url, play_status, play_hours, review, gameId);
+    `).run(name, author, platform_url, play_status, play_hours, rating, review, gameId);
 
     setGameTags(gameId, validated.tagIds);
     db.exec('COMMIT');

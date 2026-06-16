@@ -47,6 +47,7 @@
   let platform_url = $state('');
   let play_status = $state<PlayStatus>('未开始');
   let play_hours = $state<string>('');
+  let rating = $state<number | null>(null);
   let review = $state('');
   let selectedTagIds = $state<number[]>([]);
   let formError = $state('');
@@ -59,6 +60,7 @@
       platform_url = $gameQuery.data.platform_url;
       play_status = $gameQuery.data.play_status as PlayStatus;
       play_hours = $gameQuery.data.play_hours !== null ? String($gameQuery.data.play_hours) : '';
+      rating = $gameQuery.data.rating ?? null;
       review = $gameQuery.data.review;
       selectedTagIds = ($gameQuery.data.tags ?? []).map((t: { id: number }) => t.id);
       initialized = true;
@@ -70,6 +72,14 @@
       selectedTagIds = selectedTagIds.filter((id: number) => id !== tagId);
     } else {
       selectedTagIds = [...selectedTagIds, tagId];
+    }
+  }
+
+  function setRating(value: number) {
+    if (rating === value) {
+      rating = null;
+    } else {
+      rating = value;
     }
   }
 
@@ -121,6 +131,7 @@
       platform_url: platform_url.trim(),
       play_status,
       play_hours: playHoursNum !== null ? Math.round(playHoursNum * 10) / 10 : null,
+      rating,
       review: review.trim(),
       tag_ids: selectedTagIds
     });
@@ -205,6 +216,28 @@
           bind:value={play_hours}
           placeholder="例如 12.5"
         />
+      </div>
+
+      <div>
+        <Label class="mb-2">试玩评分</Label>
+        <div class="flex items-center gap-1">
+          {#each [1, 2, 3, 4, 5] as star}
+            <button
+              type="button"
+              onclick={() => setRating(star)}
+              class="text-2xl transition-colors cursor-pointer select-none focus:outline-none"
+              style="color: {rating !== null && star <= rating ? '#f59e0b' : '#d1d5db'};"
+            >
+              {rating !== null && star <= rating ? '★' : '☆'}
+            </button>
+          {/each}
+          {#if rating !== null}
+            <span class="ml-2 text-sm text-gray-500">{rating} 星</span>
+          {:else}
+            <span class="ml-2 text-sm text-gray-400">未评</span>
+          {/if}
+        </div>
+        <p class="mt-1 text-xs text-gray-400">点击星星评分，再次点击当前星级可取消</p>
       </div>
 
       <div>

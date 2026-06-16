@@ -21,6 +21,7 @@ db.exec(`
     platform_url TEXT NOT NULL DEFAULT '',
     play_status TEXT NOT NULL DEFAULT '未开始',
     play_hours REAL,
+    rating INTEGER,
     review TEXT NOT NULL DEFAULT '',
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
@@ -53,6 +54,11 @@ const columns = db.prepare("PRAGMA table_info(games)").all();
 const hasPlayHours = columns.some(col => col.name === 'play_hours');
 if (!hasPlayHours) {
   db.exec('ALTER TABLE games ADD COLUMN play_hours REAL');
+}
+
+const hasRating = columns.some(col => col.name === 'rating');
+if (!hasRating) {
+  db.exec('ALTER TABLE games ADD COLUMN rating INTEGER');
 }
 
 export default db;

@@ -16,15 +16,17 @@ function escapeCsvField(value) {
 
 router.get('/games', (_req, res) => {
   const games = db
-    .prepare('SELECT name, author, platform_url, play_status, review, updated_at FROM games ORDER BY updated_at DESC, id DESC')
+    .prepare('SELECT name, author, platform_url, play_status, play_hours, rating, review, updated_at FROM games ORDER BY updated_at DESC, id DESC')
     .all();
 
-  const header = ['游戏名', '作者', '平台链接', '试玩状态', '简短评价', '更新时间'];
+  const header = ['游戏名', '作者', '平台链接', '试玩状态', '试玩时长', '评分', '简短评价', '更新时间'];
   const rows = games.map(game => [
     game.name,
     game.author,
     game.platform_url,
     game.play_status,
+    game.play_hours ?? '',
+    game.rating ?? '',
     game.review,
     game.updated_at
   ]);
