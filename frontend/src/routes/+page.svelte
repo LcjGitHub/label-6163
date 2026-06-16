@@ -1,31 +1,23 @@
 <script lang="ts">
-  import { createQuery, useQueryClient } from '@tanstack/svelte-query';
+  import { createQuery } from '@tanstack/svelte-query';
   import { Button, Card, Select, Spinner, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
   import { DownloadOutline, FilterOutline, PlusOutline } from 'flowbite-svelte-icons';
   import StatusBadge from '$lib/components/StatusBadge.svelte';
   import { exportGames, fetchGames, fetchPlayStatuses } from '$lib/api';
   import type { PlayStatus } from '$lib/types';
 
-  const queryClient = useQueryClient();
-
   let selectedStatus = $state('全部');
-
-  const statusOptions = ['全部', '未开始', '试玩中', '已完成', '搁置'];
 
   const statusesQuery = createQuery({
     queryKey: ['playStatuses'],
     queryFn: fetchPlayStatuses
   });
 
+  const statusOptions = $derived(['全部', ...($statusesQuery.data ?? [])]);
+
   const gamesQuery = createQuery({
     queryKey: ['games', selectedStatus],
     queryFn: () => fetchGames(selectedStatus === '全部' ? undefined : selectedStatus)
-  });
-
-  $effect(() => {
-    if (selectedStatus !== undefined) {
-      queryClient.invalidateQueries({ queryKey: ['games'] });
-    }
   });
 
   let exporting = false;
@@ -92,7 +84,7 @@
   </Card>
 {/if}
 
-{#if $gamesQuery.isPending}
+{#if $gamesQuery.isFetching && !$gamesQuery.isError}
   <div class="flex justify-center py-16">
     <Spinner size="8" />
   </div>
@@ -102,11 +94,7 @@
   </Card>
 {:else if $gamesQuery.data.length === 0}
   <Card>
-    {#if selectedStatus !== '全部'}
-      <p class="text-gray-600">暂无匹配「{selectedStatus}」状态的游戏记录。</p>
-    {:else}
-      <p class="text-gray-600">暂无游戏，点击「新增游戏」开始记录。</p>
-    {/if}
+    <p class="text-gray-600">暂无数据</p>
   </Card>
 {:else}
   <Card class="overflow-x-auto p-0">
