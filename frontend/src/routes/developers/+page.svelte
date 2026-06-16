@@ -42,7 +42,7 @@
     <p class="text-gray-600">暂无带作者信息的游戏记录。</p>
   </Card>
 {:else}
-  <Card class="overflow-x-auto p-0">
+  <Card class="p-0">
     <Table hoverable>
       <TableHead>
         <TableHeadCell>开发者</TableHeadCell>

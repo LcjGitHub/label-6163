@@ -33,20 +33,28 @@
     <Spinner size="8" />
   </div>
 {:else if $gamesQuery.isError}
-  <Card class="border-red-200 bg-red-50">
-    <p class="text-red-700">加载失败，请确认后端已在 http://localhost:5000 启动。</p>
-  </Card>
+  {@const err = $gamesQuery.error as any}
+  {@const isAuthorNotFound = err?.response?.status === 404 && err?.response?.data?.error === '作者不存在'}
+  {#if isAuthorNotFound}
+    <Card class="border-yellow-200 bg-yellow-50">
+      <p class="text-yellow-800">作者不存在，请返回<a href="/developers" class="font-medium underline">开发者列表</a>查看。</p>
+    </Card>
+  {:else}
+    <Card class="border-red-200 bg-red-50">
+      <p class="text-red-700">加载失败，请确认后端已在 http://localhost:5000 启动。</p>
+    </Card>
+  {/if}
 {:else if $gamesQuery.data.length === 0}
   <Card>
     <p class="text-gray-600">该作者暂无游戏记录。</p>
   </Card>
 {:else}
-  <Card class="overflow-x-auto p-0">
-    <Table hoverable>
+  <Card class="p-0">
+    <Table hoverable class="w-full table-fixed">
       <TableHead>
-        <TableHeadCell>游戏名</TableHeadCell>
-        <TableHeadCell>试玩状态</TableHeadCell>
-        <TableHeadCell class="whitespace-nowrap">试玩时长</TableHeadCell>
+        <TableHeadCell class="w-2/5">游戏名</TableHeadCell>
+        <TableHeadCell class="w-[120px]">试玩状态</TableHeadCell>
+        <TableHeadCell class="w-[100px] whitespace-nowrap">试玩时长</TableHeadCell>
         <TableHeadCell>简短评价</TableHeadCell>
       </TableHead>
       <TableBody>
@@ -54,7 +62,7 @@
           <TableBodyRow>
             <TableBodyCell class="font-medium text-gray-900">
               <div class="flex flex-wrap items-center gap-1.5">
-                <span>{game.name}</span>
+                <span class="truncate">{game.name}</span>
                 {#if game.tags && game.tags.length > 0}
                   {#each game.tags as tag (tag.id)}
                     <span
@@ -77,7 +85,7 @@
                 <span class="text-gray-400">未记录</span>
               {/if}
             </TableBodyCell>
-            <TableBodyCell class="max-w-xs truncate text-gray-600">{game.review || '—'}</TableBodyCell>
+            <TableBodyCell class="truncate text-gray-600">{game.review || '—'}</TableBodyCell>
           </TableBodyRow>
         {/each}
       </TableBody>

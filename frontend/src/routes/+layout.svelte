@@ -15,10 +15,18 @@
   });
 
   const navItems = [
-    { href: '/', label: '游戏列表' },
-    { href: '/stats', label: '数据统计' },
-    { href: '/developers', label: '开发者视图' }
+    { href: '/', label: '游戏列表', exact: true },
+    { href: '/stats', label: '数据统计', exact: true },
+    { href: '/developers', label: '开发者视图', exact: false }
   ];
+
+  function isNavActive(href: string, exact: boolean) {
+    const pathname = $page.url.pathname;
+    if (exact) {
+      return pathname === href;
+    }
+    return pathname === href || pathname.startsWith(href + '/');
+  }
 </script>
 
 <QueryClientProvider client={queryClient}>
@@ -31,7 +39,7 @@
             {#each navItems as item}
               <a
                 href={item.href}
-                class={$page.url.pathname === item.href
+                class={isNavActive(item.href, item.exact)
                   ? 'rounded-md bg-blue-50 px-3 py-1.5 font-semibold text-blue-600'
                   : 'rounded-md px-3 py-1.5 text-gray-600 hover:bg-gray-100 hover:text-gray-900'}
               >{item.label}</a>
