@@ -1,6 +1,7 @@
 import cors from 'cors';
 import express from 'express';
 import gamesRouter from './routes/games.js';
+import statsRouter from './routes/stats.js';
 import { seedIfEmpty } from './seed.js';
 
 const app = express();
@@ -14,6 +15,7 @@ app.get('/api/health', (_req, res) => {
 });
 
 app.use('/api/games', gamesRouter);
+app.use('/api/stats', statsRouter);
 
 const seeded = seedIfEmpty();
 if (seeded > 0) {

@@ -21,3 +21,13 @@ export interface GameInput {
   play_status: PlayStatus;
   review: string;
 }
+
+/** 各试玩状态数量映射 */
+export type StatusCounts = Record<PlayStatus, number>;
+
+/** 统计数据 */
+export interface Stats {
+  total: number;
+  status_counts: StatusCounts;
+  recent_games: Game[];
+}

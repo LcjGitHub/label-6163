@@ -18,7 +18,13 @@
   <div class="min-h-screen">
     <header class="border-b border-gray-200 bg-white shadow-sm">
       <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
-        <a href="/" class="text-xl font-bold text-gray-900">独立游戏 Demo 试玩清单</a>
+        <div class="flex items-center gap-6">
+          <a href="/" class="text-xl font-bold text-gray-900">独立游戏 Demo 试玩清单</a>
+          <nav class="flex gap-4 text-sm">
+            <a href="/" class="text-gray-600 hover:text-gray-900">游戏列表</a>
+            <a href="/stats" class="text-gray-600 hover:text-gray-900">数据统计</a>
+          </nav>
+        </div>
         <span class="text-sm text-gray-500">MVP · Svelte 5</span>
       </div>
     </header>
