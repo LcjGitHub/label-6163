@@ -1,29 +1,35 @@
 <script lang="ts">
   import { createQuery } from '@tanstack/svelte-query';
+  import { derived, writable } from 'svelte/store';
   import { Button, Card, Input, Select, Spinner, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
-  import { DownloadOutline, FilterOutline, PlusOutline, SearchOutline, XOutline } from 'flowbite-svelte-icons';
+  import { DownloadOutline, FilterOutline, PlusOutline, SearchOutline, CloseOutline } from 'flowbite-svelte-icons';
   import StatusBadge from '$lib/components/StatusBadge.svelte';
   import { exportGames, fetchGames, fetchPlayStatuses } from '$lib/api';
   import type { PlayStatus } from '$lib/types';
 
-  let selectedStatus = $state('全部');
-  let searchInput = $state('');
-  let searchKeyword = $state('');
+  const selectedStatus = writable('全部');
+  const searchInput = writable('');
+  const searchKeyword = writable('');
 
   const statusesQuery = createQuery({
     queryKey: ['playStatuses'],
     queryFn: fetchPlayStatuses
   });
 
-  const statusOptions = $derived(['全部', ...($statusesQuery.data ?? [])]);
+  const statusOptions = derived(statusesQuery, ($statusesQuery) => ['全部', ...($statusesQuery.data ?? [])]);
 
-  const gamesQuery = createQuery({
-    queryKey: ['games', selectedStatus, searchKeyword],
-    queryFn: () => fetchGames(
-      selectedStatus === '全部' ? undefined : selectedStatus,
-      searchKeyword || undefined
-    )
-  });
+  const gamesOptions = derived(
+    [selectedStatus, searchKeyword],
+    ([$selectedStatus, $searchKeyword]) => ({
+      queryKey: ['games', $selectedStatus, $searchKeyword],
+      queryFn: () => fetchGames(
+        $selectedStatus === '全部' ? undefined : $selectedStatus,
+        $searchKeyword || undefined
+      )
+    })
+  );
+
+  const gamesQuery = createQuery(gamesOptions);
 
   let exporting = false;
   let exportError = '';
@@ -42,12 +48,12 @@
   }
 
   function handleSearch() {
-    searchKeyword = searchInput.trim();
+    $searchKeyword = $searchInput.trim();
   }
 
   function handleClearSearch() {
-    searchInput = '';
-    searchKeyword = '';
+    $searchInput = '';
+    $searchKeyword = '';
   }
 
   function handleKeydown(event: KeyboardEvent) {
@@ -84,8 +90,8 @@
       <span class="text-sm text-gray-600">试玩状态：</span>
     </div>
     <div class="w-40">
-      <Select bind:value={selectedStatus}>
-        {#each statusOptions as status}
+      <Select bind:value={$selectedStatus}>
+        {#each $statusOptions as status}
           <option value={status}>{status}</option>
         {/each}
       </Select>
@@ -94,7 +100,7 @@
     <div class="flex items-center gap-2">
       <div class="w-56">
         <Input
-          bind:value={searchInput}
+          bind:value={$searchInput}
           placeholder="搜索游戏名..."
           on:keydown={handleKeydown}
         />
@@ -102,9 +108,9 @@
       <Button size="sm" color="blue" on:click={handleSearch}>
         <SearchOutline class="h-4 w-4" />
       </Button>
-      {#if searchKeyword}
+      {#if $searchKeyword}
         <Button size="sm" color="light" on:click={handleClearSearch}>
-          <XOutline class="h-4 w-4" />
+          <CloseOutline class="h-4 w-4" />
         </Button>
       {/if}
     </div>
@@ -132,9 +138,9 @@
   </Card>
 {:else if $gamesQuery.data.length === 0}
   <Card>
-    {#if searchKeyword}
+    {#if $searchKeyword}
       <div class="text-center py-4">
-        <p class="text-gray-600 mb-2">未找到与「{searchKeyword}」相关的游戏</p>
+        <p class="text-gray-600 mb-2">未找到与「{$searchKeyword}」相关的游戏</p>
         <Button size="sm" color="light" on:click={handleClearSearch}>清空搜索</Button>
       </div>
     {:else}
