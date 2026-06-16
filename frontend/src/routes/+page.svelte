@@ -54,7 +54,21 @@
       <TableBody>
         {#each $gamesQuery.data as game (game.id)}
           <TableBodyRow>
-            <TableBodyCell class="font-medium text-gray-900">{game.name}</TableBodyCell>
+            <TableBodyCell class="font-medium text-gray-900">
+              <div class="flex flex-wrap items-center gap-1.5">
+                <span>{game.name}</span>
+                {#if game.tags && game.tags.length > 0}
+                  {#each game.tags as tag (tag.id)}
+                    <span
+                      class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium leading-none"
+                      style="background-color: {tag.color}20; color: {tag.color}; border: 1px solid {tag.color}40;"
+                    >
+                      {tag.name}
+                    </span>
+                  {/each}
+                {/if}
+              </div>
+            </TableBodyCell>
             <TableBodyCell>{game.author || '—'}</TableBodyCell>
             <TableBodyCell>
               <StatusBadge status={game.play_status as PlayStatus} />

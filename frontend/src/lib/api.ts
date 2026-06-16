@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Game, GameInput, Stats } from './types';
+import type { Game, GameInput, Stats, Tag } from './types';
 
 const api = axios.create({
   baseURL: 'http://localhost:5000/api',
@@ -63,5 +63,10 @@ export async function deleteGame(id: number): Promise<void> {
  */
 export async function fetchStats(): Promise<Stats> {
   const { data } = await api.get<Stats>('/stats');
+  return data;
+}
+
+export async function fetchTags(): Promise<Tag[]> {
+  const { data } = await api.get<Tag[]>('/tags');
   return data;
 }
