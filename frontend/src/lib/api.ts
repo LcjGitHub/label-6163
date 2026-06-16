@@ -87,3 +87,36 @@ export async function fetchGamesByAuthor(authorName: string): Promise<Game[]> {
   const { data } = await api.get<Game[]>(`/authors/${encodeURIComponent(authorName)}/games`);
   return data;
 }
+
+/**
+ * 导出全部游戏记录为 CSV 文件
+ */
+export async function exportGames(): Promise<void> {
+  const response = await api.get('/export/games', {
+    responseType: 'blob'
+  });
+
+  const contentDisposition = response.headers['content-disposition'];
+  let filename = '游戏清单.csv';
+  if (contentDisposition) {
+    const utf8Match = contentDisposition.match(/filename\*=UTF-8''([^;]+)/);
+    if (utf8Match && utf8Match[1]) {
+      filename = decodeURIComponent(utf8Match[1]);
+    } else {
+      const matches = contentDisposition.match(/filename="?([^"]+)"?/);
+      if (matches && matches[1]) {
+        filename = decodeURIComponent(matches[1]);
+      }
+    }
+  }
+
+  const blob = new Blob([response.data], { type: 'text/csv; charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}

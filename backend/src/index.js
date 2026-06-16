@@ -4,6 +4,7 @@ import gamesRouter from './routes/games.js';
 import tagsRouter from './routes/tags.js';
 import statsRouter from './routes/stats.js';
 import authorsRouter from './routes/authors.js';
+import exportRouter from './routes/export.js';
 import { seedIfEmpty } from './seed.js';
 
 const app = express();
@@ -20,6 +21,7 @@ app.use('/api/games', gamesRouter);
 app.use('/api/tags', tagsRouter);
 app.use('/api/stats', statsRouter);
 app.use('/api/authors', authorsRouter);
+app.use('/api/export', exportRouter);
 
 const seeded = seedIfEmpty();
 if (seeded > 0) {

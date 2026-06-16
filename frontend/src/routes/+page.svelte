@@ -1,15 +1,27 @@
 <script lang="ts">
   import { createQuery } from '@tanstack/svelte-query';
   import { Button, Card, Spinner, Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
-  import { PlusOutline } from 'flowbite-svelte-icons';
+  import { DownloadOutline, PlusOutline } from 'flowbite-svelte-icons';
   import StatusBadge from '$lib/components/StatusBadge.svelte';
-  import { fetchGames } from '$lib/api';
+  import { exportGames, fetchGames } from '$lib/api';
   import type { PlayStatus } from '$lib/types';
 
   const gamesQuery = createQuery({
     queryKey: ['games'],
     queryFn: fetchGames
   });
+
+  let exporting = false;
+
+  async function handleExport() {
+    if (exporting) return;
+    exporting = true;
+    try {
+      await exportGames();
+    } finally {
+      exporting = false;
+    }
+  }
 </script>
 
 <svelte:head>
@@ -21,10 +33,16 @@
     <h1 class="text-2xl font-bold text-gray-900">试玩游戏列表</h1>
     <p class="mt-1 text-sm text-gray-500">记录独立 Demo 的试玩状态与简短评价</p>
   </div>
-  <Button href="/games/new" color="blue">
-    <PlusOutline class="me-2 h-4 w-4" />
-    新增游戏
-  </Button>
+  <div class="flex items-center gap-3">
+    <Button color="light" on:click={handleExport} disabled={exporting || $gamesQuery.isPending}>
+      <DownloadOutline class="me-2 h-4 w-4" />
+      {exporting ? '导出中...' : '导出清单'}
+    </Button>
+    <Button href="/games/new" color="blue">
+      <PlusOutline class="me-2 h-4 w-4" />
+      新增游戏
+    </Button>
+  </div>
 </div>
 
 {#if $gamesQuery.isPending}
