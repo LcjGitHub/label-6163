@@ -159,11 +159,38 @@ function backfillGameTags() {
   return backfilled;
 }
 
+function backfillGameRatings() {
+  const { gameCount } = db.prepare('SELECT COUNT(*) AS gameCount FROM games').get();
+  if (gameCount === 0) return 0;
+
+  const { nullRatingCount } = db.prepare('SELECT COUNT(*) AS nullRatingCount FROM games WHERE rating IS NULL').get();
+  if (nullRatingCount === 0) return 0;
+
+  const updateRating = db.prepare('UPDATE games SET rating = ? WHERE name = ? AND rating IS NULL');
+
+  let backfilled = 0;
+  db.exec('BEGIN');
+  try {
+    for (const seedGame of SEED_GAMES) {
+      if (seedGame.rating === undefined || seedGame.rating === null) continue;
+      const result = updateRating.run(seedGame.rating, seedGame.name);
+      backfilled += result.changes;
+    }
+    db.exec('COMMIT');
+  } catch (error) {
+    db.exec('ROLLBACK');
+    throw error;
+  }
+
+  return backfilled;
+}
+
 export function seedIfEmpty() {
   ensureTags();
   const inserted = seedGamesWithTags();
   if (inserted === 0) {
     backfillGameTags();
   }
+  backfillGameRatings();
   return inserted;
 }

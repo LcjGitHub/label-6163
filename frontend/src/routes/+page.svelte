@@ -149,15 +149,15 @@
   </Card>
 {:else}
   <Card class="overflow-x-auto p-0">
-    <Table hoverable>
+    <Table hoverable class="w-full table-fixed">
       <TableHead>
-        <TableHeadCell>游戏名</TableHeadCell>
-        <TableHeadCell>作者</TableHeadCell>
-        <TableHeadCell>试玩状态</TableHeadCell>
-        <TableHeadCell class="whitespace-nowrap">试玩时长</TableHeadCell>
-        <TableHeadCell>评分</TableHeadCell>
-        <TableHeadCell>简短评价</TableHeadCell>
-        <TableHeadCell>
+        <TableHeadCell class="w-[22%]">游戏名</TableHeadCell>
+        <TableHeadCell class="w-[12%]">作者</TableHeadCell>
+        <TableHeadCell class="w-[10%]">状态</TableHeadCell>
+        <TableHeadCell class="w-[9%] whitespace-nowrap">时长</TableHeadCell>
+        <TableHeadCell class="w-[10%] whitespace-nowrap">评分</TableHeadCell>
+        <TableHeadCell class="w-[28%]">简短评价</TableHeadCell>
+        <TableHeadCell class="w-[9%]">
           <span class="sr-only">操作</span>
         </TableHeadCell>
       </TableHead>
@@ -166,11 +166,11 @@
           <TableBodyRow>
             <TableBodyCell class="font-medium text-gray-900">
               <div class="flex flex-wrap items-center gap-1.5">
-                <span>{game.name}</span>
+                <span class="truncate">{game.name}</span>
                 {#if game.tags && game.tags.length > 0}
                   {#each game.tags as tag (tag.id)}
                     <span
-                      class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium leading-none"
+                      class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium leading-none shrink-0"
                       style="background-color: {tag.color}20; color: {tag.color}; border: 1px solid {tag.color}40;"
                     >
                       {tag.name}
@@ -195,7 +195,7 @@
                 <span class="text-amber-500">
                   {#each Array(game.rating) as _, i (i)}★{/each}
                 </span>
-                <span class="ml-1 text-xs text-gray-500">{game.rating}星</span>
+                <span class="ml-1 text-xs text-gray-500">{game.rating} 星</span>
               {:else}
                 <span class="text-gray-400">未评</span>
               {/if}
