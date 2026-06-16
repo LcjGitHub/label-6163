@@ -46,6 +46,7 @@
   let author = $state('');
   let platform_url = $state('');
   let play_status = $state<PlayStatus>('未开始');
+  let play_hours = $state<string>('');
   let review = $state('');
   let selectedTagIds = $state<number[]>([]);
   let formError = $state('');
@@ -57,6 +58,7 @@
       author = $gameQuery.data.author;
       platform_url = $gameQuery.data.platform_url;
       play_status = $gameQuery.data.play_status as PlayStatus;
+      play_hours = $gameQuery.data.play_hours !== null ? String($gameQuery.data.play_hours) : '';
       review = $gameQuery.data.review;
       selectedTagIds = ($gameQuery.data.tags ?? []).map((t: { id: number }) => t.id);
       initialized = true;
@@ -107,11 +109,18 @@
       return;
     }
 
+    const playHoursNum = play_hours.trim() !== '' ? Number(play_hours) : null;
+    if (playHoursNum !== null && (isNaN(playHoursNum) || playHoursNum < 0)) {
+      formError = '试玩时长必须是非负数';
+      return;
+    }
+
     $saveMutation.mutate({
       name: name.trim(),
       author: author.trim(),
       platform_url: platform_url.trim(),
       play_status,
+      play_hours: playHoursNum !== null ? Math.round(playHoursNum * 10) / 10 : null,
       review: review.trim(),
       tag_ids: selectedTagIds
     });
@@ -184,6 +193,18 @@
             <option value="搁置">搁置</option>
           {/if}
         </Select>
+      </div>
+
+      <div>
+        <Label for="play_hours" class="mb-2">试玩时长（小时）</Label>
+        <Input
+          id="play_hours"
+          type="number"
+          step="0.1"
+          min="0"
+          bind:value={play_hours}
+          placeholder="例如 12.5"
+        />
       </div>
 
       <div>

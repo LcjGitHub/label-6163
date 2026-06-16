@@ -20,6 +20,7 @@ db.exec(`
     author TEXT NOT NULL DEFAULT '',
     platform_url TEXT NOT NULL DEFAULT '',
     play_status TEXT NOT NULL DEFAULT '未开始',
+    play_hours REAL,
     review TEXT NOT NULL DEFAULT '',
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
@@ -47,5 +48,11 @@ db.exec(`
 `);
 
 db.exec('PRAGMA foreign_keys = ON');
+
+const columns = db.prepare("PRAGMA table_info(games)").all();
+const hasPlayHours = columns.some(col => col.name === 'play_hours');
+if (!hasPlayHours) {
+  db.exec('ALTER TABLE games ADD COLUMN play_hours REAL');
+}
 
 export default db;
